@@ -20,7 +20,7 @@
   </ModulePrefs>
   <Content type="html">
   <![CDATA[
-  <?php require('content.html'); ?>
+  <?php require('content.php'); ?>
   ]]>
   </Content>
 </Module>
