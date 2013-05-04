@@ -57,7 +57,7 @@ function rollDice() {
 
 		roll += modifier;
 
-		var result = memo + ": " + roll;
+		var result = numdice + 'd' + die + (modifier ? ('+' + modifier) : '') + ': ' + roll;
 
 		var value = 0;
 		var count = gapi.hangout.data.getState()['count'];
