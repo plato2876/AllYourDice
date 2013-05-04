@@ -24,8 +24,8 @@
 
   label {
     display: inline-block;
-    margin-bottom: 8px;
-    margin-right: 12px;
+    margin-bottom: 10px;
+    margin-right: 10px;
   }
 
   label > * {
@@ -34,7 +34,7 @@
   }
 </style>
 
-<h1>Your Dice: Roll Them</h1>
+<h3>Your Dice: Roll Them</h3>
 <section>
   <form>
     <label><img class="DieLabel" src="<?php echo $contentPath ?>/icons/32x32-d20.png" title="d20" /> <input type="number" id="d20" class="die" data-size="20" max="99" min="0" size="2"/></label>
