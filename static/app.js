@@ -18,123 +18,143 @@
 var serverPath = '//allyourdice.appspot.com/';
 
 function rollDice() {
-	var die = parseInt($('#die').val());
-	var numdice = parseInt($('#numDice').val());
-	var modifier = parseInt($('#mod').val());
+	var modifier = $('#mod').val() ? parseInt($('#mod').val()) : 0;
+	if (isNaN(modifier))
+	{
+		modifier = 0;
+	}
 	var memo = $('#memo').val();
 
-	var roll = 0;
-
-	for (var i = 0; i < numdice; i++)
+	$('.die').each(function()
 	{
-		roll += Math.ceil(Math.random() * die);
-	}
+		if (!$(this).val())
+		{
+			return true;
+		}
 
-	roll += modifier;
+		var numdice = parseInt($(this).val());
 
-	var result = memo + ": " + roll;
+		if (isNaN(numdice))
+		{
+			return true;
+		}
 
+		var die = parseInt($(this).attr('data-size'));
+
+		if (isNaN(die))
+		{
+			return true;
+		}
+
+		console.log("For "+numdice+" dice of size "+die+"...");
+
+		var roll = 0;
+
+		for (var i = 0; i < numdice; i++)
+		{
+			roll += Math.ceil(Math.random() * die);
+		}
+
+		roll += modifier;
+
+		var result = memo + ": " + roll;
+
+		var value = 0;
+		var count = gapi.hangout.data.getState()['count'];
+		if (count) {
+			value = parseInt(count);
+		}
+
+		gapi.hangout.data.submitDelta({'roll': result, 'count': '' + (value + 1) });
+	});
+}
+
+// The functions triggered by the buttons on the Hangout App
+function countButtonClick() {
+	// Note that if you click the button several times in succession,
+	// if the state update hasn't gone through, it will submit the same
+	// delta again.	The hangout data state only remembers the most-recent
+	// update.
+	console.log('Button clicked.');
 	var value = 0;
 	var count = gapi.hangout.data.getState()['count'];
 	if (count) {
 		value = parseInt(count);
 	}
 
-	gapi.hangout.data.submitDelta({'roll': result, 'count': '' + (value + 1) });
-}
-
-// The functions triggered by the buttons on the Hangout App
-function countButtonClick() {
-  // Note that if you click the button several times in succession,
-  // if the state update hasn't gone through, it will submit the same
-  // delta again.  The hangout data state only remembers the most-recent
-  // update.
-  console.log('Button clicked.');
-  var value = 0;
-  var count = gapi.hangout.data.getState()['count'];
-  if (count) {
-    value = parseInt(count);
-  }
-
-  console.log('New count is ' + value);
-  // Send update to shared state.
-  // NOTE:  Only ever send strings as values in the key-value pairs
-  gapi.hangout.data.submitDelta({'count': '' + (value + 1)});
+	console.log('New count is ' + value);
+	// Send update to shared state.
+	// NOTE:  Only ever send strings as values in the key-value pairs
+	gapi.hangout.data.submitDelta({'count': '' + (value + 1)});
 }
 
 function resetButtonClick() {
-  console.log('Resetting count to 0');
-  gapi.hangout.data.submitDelta({'count': '0'});
+	console.log('Resetting count to 0');
+	gapi.hangout.data.submitDelta({'count': '0'});
 }
 
 var forbiddenCharacters = /[^a-zA-Z!0-9_\- ]/;
 function setText(element, text) {
-  element.innerHTML = typeof text === 'string' ?
-      text.replace(forbiddenCharacters, '') :
-      '';
+	element.innerHTML = typeof text === 'string' ?
+		text.replace(forbiddenCharacters, '') :
+		'';
 }
 
 function getMessageClick() {
-  console.log('Requesting message from main.py');
-  var http = new XMLHttpRequest();
-  http.open('GET', serverPath);
-  http.onreadystatechange = function() {
-    if (this.readyState == 4 && this.status == 200) {
-      var jsonResponse = JSON.parse(http.responseText);
-      console.log(jsonResponse);
+	console.log('Requesting message from main.py');
+	var http = new XMLHttpRequest();
+	http.open('GET', serverPath);
+	http.onreadystatechange = function() {
+		if (this.readyState == 4 && this.status == 200) {
+			var jsonResponse = JSON.parse(http.responseText);
+			console.log(jsonResponse);
 
-      var messageElement = document.getElementById('message');
-      setText(messageElement, jsonResponse['message']);
-    }
-  }
-  http.send();
+			var messageElement = document.getElementById('message');
+			if (typeof messageElement != 'undefined') {
+				setText(messageElement, jsonResponse['message']);
+			}
+		}
+	}
+	http.send();
 }
-
-//function updateStateUi(state) {
-//  var countElement = document.getElementById('count');
-//  var stateCount = state['count'];
-//  if (!stateCount) {
-//    setText(countElement, 'Probably 0');
-//  } else {
-//    setText(countElement, stateCount.toString());
-//  }
-//}
 
 function updateStateUi(state) {
 	$("#rolls").prepend('<p>' + state['roll'] + '</p>');
 }
 
 function updateParticipantsUi(participants) {
-  console.log('Participants count: ' + participants.length);
-  var participantsListElement = document.getElementById('participants');
-  setText(participantsListElement, participants.length.toString());
+	console.log('Participants count: ' + participants.length);
+	var participantsListElement = document.getElementById('participants');
+//	if (typeof participantsListElement != 'undefined') {
+//		setText(participantsListElement, participants.length.toString());
+//	}
 }
 
 // A function to be run at app initialization time which registers our callbacks
 function init() {
-  console.log('Init app.');
+	console.log('Init app.');
 
-  var apiReady = function(eventObj) {
-    if (eventObj.isApiReady) {
-      console.log('API is ready');
+	var apiReady = function(eventObj) {
+		if (eventObj.isApiReady) {
+			console.log('API is ready');
 
-      gapi.hangout.data.onStateChanged.add(function(eventObj) {
-        updateStateUi(eventObj.state);
-      });
-      gapi.hangout.onParticipantsChanged.add(function(eventObj) {
-        updateParticipantsUi(eventObj.participants);
-      });
+			gapi.hangout.data.onStateChanged.add(function(eventObj) {
+				updateStateUi(eventObj.state);
+			});
+			gapi.hangout.onParticipantsChanged.add(function(eventObj) {
+				updateParticipantsUi(eventObj.participants);
+			});
 
-      updateStateUi(gapi.hangout.data.getState());
-      updateParticipantsUi(gapi.hangout.getParticipants());
+			updateStateUi(gapi.hangout.data.getState());
+			updateParticipantsUi(gapi.hangout.getParticipants());
 
-      gapi.hangout.onApiReady.remove(apiReady);
-    }
-  };
+			gapi.hangout.onApiReady.remove(apiReady);
+		}
+	};
 
-  // This application is pretty simple, but use this special api ready state
-  // event if you would like to any more complex app setup.
-  gapi.hangout.onApiReady.add(apiReady);
+	// This application is pretty simple, but use this special api ready state
+	// event if you would like to any more complex app setup.
+	gapi.hangout.onApiReady.add(apiReady);
 }
 
 gadgets.util.registerOnLoadHandler(init);
