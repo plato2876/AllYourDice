@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- The hangout API JavaScript. Always include this first -->
-<script src="//hangoutsapi.talkgadget.google.com/hangouts/api/hangout.js?v=1.0"></script>
+<script src="//hangoutsapi.talkgadget.google.com/hangouts/api/hangout.js?v=1.4"></script>
 
 <!-- Jquery, yo -->
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>

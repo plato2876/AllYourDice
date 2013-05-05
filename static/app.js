@@ -18,11 +18,16 @@
 var serverPath = '//allyourdice.appspot.com/';
 
 function rollDice() {
+	var user = gapi.hangout.getLocalParticipant();
+	var displayName = user.person.displayName;
+
 	var modifier = $('#mod').val() ? parseInt($('#mod').val()) : 0;
+
 	if (isNaN(modifier))
 	{
 		modifier = 0;
 	}
+
 	var memo = $('#memo').val();
 
 	$('.die').each(function()
@@ -54,7 +59,11 @@ function rollDice() {
 
 		modifierStr = modifier < 0 ? modifier : '+' + modifier;
 
-		var result = (memo ? (memo + ' ') : '') + numDice + 'd' + die + (modifier ? modifierStr : '') + ': ' + roll;
+
+		var result = '<b>' + displayName + '</b> ' 
+			+ (memo ? (memo + ' ') : '') 
+			+ numDice + 'd' + die + (modifier ? modifierStr : '') 
+			+ ': ' + roll;
 
 		var value = 0;
 		var count = gapi.hangout.data.getState()['count'];
