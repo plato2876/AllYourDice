@@ -66,65 +66,8 @@ function rollDice() {
 	});
 }
 
-// The functions triggered by the buttons on the Hangout App
-function countButtonClick() {
-	// Note that if you click the button several times in succession,
-	// if the state update hasn't gone through, it will submit the same
-	// delta again.	The hangout data state only remembers the most-recent
-	// update.
-	console.log('Button clicked.');
-	var value = 0;
-	var count = gapi.hangout.data.getState()['count'];
-	if (count) {
-		value = parseInt(count);
-	}
-
-	console.log('New count is ' + value);
-	// Send update to shared state.
-	// NOTE:  Only ever send strings as values in the key-value pairs
-	gapi.hangout.data.submitDelta({'count': '' + (value + 1)});
-}
-
-function resetButtonClick() {
-	console.log('Resetting count to 0');
-	gapi.hangout.data.submitDelta({'count': '0'});
-}
-
-var forbiddenCharacters = /[^a-zA-Z!0-9_\- ]/;
-function setText(element, text) {
-	element.innerHTML = typeof text === 'string' ?
-		text.replace(forbiddenCharacters, '') :
-		'';
-}
-
-function getMessageClick() {
-	console.log('Requesting message from main.py');
-	var http = new XMLHttpRequest();
-	http.open('GET', serverPath);
-	http.onreadystatechange = function() {
-		if (this.readyState == 4 && this.status == 200) {
-			var jsonResponse = JSON.parse(http.responseText);
-			console.log(jsonResponse);
-
-			var messageElement = document.getElementById('message');
-			if (typeof messageElement != 'undefined') {
-				setText(messageElement, jsonResponse['message']);
-			}
-		}
-	}
-	http.send();
-}
-
 function updateStateUi(state) {
 	$("#rolls").prepend('<p>' + state['roll'] + '</p>');
-}
-
-function updateParticipantsUi(participants) {
-	console.log('Participants count: ' + participants.length);
-	var participantsListElement = document.getElementById('participants');
-//	if (typeof participantsListElement != 'undefined') {
-//		setText(participantsListElement, participants.length.toString());
-//	}
 }
 
 // A function to be run at app initialization time which registers our callbacks
@@ -138,11 +81,6 @@ function init() {
 			gapi.hangout.data.onStateChanged.add(function(eventObj) {
 				updateStateUi(eventObj.state);
 			});
-			gapi.hangout.onParticipantsChanged.add(function(eventObj) {
-				updateParticipantsUi(eventObj.participants);
-			});
-
-			updateParticipantsUi(gapi.hangout.getParticipants());
 
 			gapi.hangout.onApiReady.remove(apiReady);
 		}
