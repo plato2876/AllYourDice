@@ -142,7 +142,6 @@ function init() {
 				updateParticipantsUi(eventObj.participants);
 			});
 
-			updateStateUi(gapi.hangout.data.getState());
 			updateParticipantsUi(gapi.hangout.getParticipants());
 
 			gapi.hangout.onApiReady.remove(apiReady);
