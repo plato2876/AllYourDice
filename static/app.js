@@ -48,22 +48,29 @@ function rollDice() {
 
 		console.log("For "+numDice+" dice of size "+die+"...");
 
-		var roll = 0;
-
-		for (var i = 0; i < numDice; i++)
+		var rolls = [];
+		
+		for(var i = 0; i < numDice; i++)
 		{
-			roll += Math.ceil(Math.random() * die);
+			rolls.push(Math.ceil(Math.random() * die));
 		}
 
+		roll = rolls.reduce(function(a, b) { return a + b; });
 		roll += modifier;
 
-		modifierStr = modifier < 0 ? modifier : '+' + modifier;
+		rollStr = '(' + rolls.join(',') + ')';
+		modifierStr = '';
 
+		if (modifier != 0)
+		{
+			modifierStr = modifier < 0 ? modifier : '+' + modifier;
+			rollStr += ' ' + modifierStr;
+		}
 
-		var result = '<b>' + displayName + '</b> ' 
-			+ (memo ? (memo + ' ') : '') 
-			+ numDice + 'd' + die + (modifier ? modifierStr : '') 
-			+ ': ' + roll;
+		var result = '<b>' + displayName + '</b><br />' 
+			+ (memo ? ('<i>' + memo + '</i> ') : '') 
+			+ numDice + 'd' + die
+			+ rollStr + ': <b>' + roll + '</b>';
 
 		var value = 0;
 		var count = gapi.hangout.data.getState()['count'];
