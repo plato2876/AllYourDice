@@ -16,74 +16,94 @@
 * the License.
 */
 var serverPath = '//allyourdice.appspot.com/';
+var dom = {
+	rollDie: '.DieLabel',
+	die: '.die',
+	mod: '#mod',
+	memo: '#memo'
+};
 
-function rollDice() {
+function rollDice(die, numDice) {
 	var user = gapi.hangout.getLocalParticipant();
 	var displayName = user.person.displayName;
 
-	var modifier = $('#mod').val() ? parseInt($('#mod').val()) : 0;
+	var modifier = $(dom.mod).val() ? parseInt($(dom.mod).val()) : 0;
 
 	if (isNaN(modifier))
 	{
 		modifier = 0;
 	}
 
-	var memo = $('#memo').val();
+	var memo = $(dom.memo).val();
 
-	$('.die').each(function()
+	console.log("For "+numDice+" dice of size "+die+"...");
+
+	var rolls = [];
+	
+	for(var i = 0; i < numDice; i++)
 	{
-		var numDice = parseInt($(this).val());
+		rolls.push(Math.ceil(Math.random() * die));
+	}
 
-		if (isNaN(numDice) || numDice < 1)
-		{
-			return true;
-		}
+	roll = rolls.reduce(function(a, b) { return a + b; });
+	roll += modifier;
 
-		var die = parseInt($(this).attr('data-size'));
+	rollStr = '(' + rolls.join(',') + ')';
+	modifierStr = '';
 
-		if (isNaN(die))
-		{
-			return true;
-		}
+	if (modifier != 0)
+	{
+		modifierStr = modifier < 0 ? modifier : '+' + modifier;
+		rollStr += ' ' + modifierStr;
+	}
 
-		console.log("For "+numDice+" dice of size "+die+"...");
+	var result = '<b>' + displayName + '</b><br />' 
+		+ (memo ? ('<i>' + memo + '</i> ') : '') 
+		+ numDice + 'd' + die
+		+ rollStr + ': <b>' + roll + '</b>';
 
-		var rolls = [];
-		
-		for(var i = 0; i < numDice; i++)
-		{
-			rolls.push(Math.ceil(Math.random() * die));
-		}
+	induceUpdate({'roll': result});
+}
 
-		roll = rolls.reduce(function(a, b) { return a + b; });
-		roll += modifier;
+function induceUpdate(obj) {
+	var updateCountVal = 0;
+	var updateCount = gapi.hangout.data.getState()['updateCount'];
 
-		rollStr = '(' + rolls.join(',') + ')';
-		modifierStr = '';
+	if (updateCount)
+	{
+		updateCountVal = parseInt(updateCount);
+	}
 
-		if (modifier != 0)
-		{
-			modifierStr = modifier < 0 ? modifier : '+' + modifier;
-			rollStr += ' ' + modifierStr;
-		}
+	obj.updateCount = '' + (updateCountVal + 1);
 
-		var result = '<b>' + displayName + '</b><br />' 
-			+ (memo ? ('<i>' + memo + '</i> ') : '') 
-			+ numDice + 'd' + die
-			+ rollStr + ': <b>' + roll + '</b>';
-
-		var value = 0;
-		var count = gapi.hangout.data.getState()['count'];
-		if (count) {
-			value = parseInt(count);
-		}
-
-		gapi.hangout.data.submitDelta({'roll': result, 'count': '' + (value + 1) });
-	});
+	gapi.hangout.data.submitDelta(obj);
 }
 
 function updateStateUi(state) {
 	$("#rolls").prepend('<p>' + state['roll'] + '</p>');
+}
+
+function attachUiHandlers() {
+	$(dom.rollDie).click(function() {
+		var $dieInput = $(this).siblings(dom.die);
+		var numDice = parseInt($dieInput.val());
+
+		// If nothing entered early exit
+		if (isNaN(numDice))
+		{
+			return;
+		}
+
+		var dieSize = parseInt($dieInput.attr('data-size'));
+
+		// Decline to roll zero dice
+		if (isNaN(dieSize) || numDice < 1)
+		{
+			return;
+		}
+
+		rollDice(dieSize, numDice);
+	});
 }
 
 // A function to be run at app initialization time which registers our callbacks
@@ -93,6 +113,8 @@ function init() {
 	var apiReady = function(eventObj) {
 		if (eventObj.isApiReady) {
 			console.log('API is ready');
+
+			attachUiHandlers();
 
 			gapi.hangout.data.onStateChanged.add(function(eventObj) {
 				updateStateUi(eventObj.state);
