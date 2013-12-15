@@ -1,0 +1,9 @@
+AllYourDie Terms of Service
+
+1. This software is provided without any warranty, guarantee of safety, or suggestion that it might not be latently sentient.
+
+2. These terms are subject to change without notification, continental drift, and occasional volcanic eruption.
+
+3. In the event of streaky dice please consult the mathametician implementing javascript's pseudorandom number generator.
+
+4. Please roll dice responsibly.
