@@ -20,21 +20,27 @@ var dom = {
 	rollDie: '.DieLabel',
 	die: '.die',
 	mod: '#mod',
-	memo: '#memo'
+	memo: '#memo',
+	rolls: '#rolls',
+	savedRolls: '#SavedRolls',
+	savedRoll: '.SavedRoll',
+	rollSave: '.RollMemo'
 };
 
-function rollDice(die, numDice) {
+function rollDice(rollInfo) {
+	var die = rollInfo.dieSize;
+	var numDice = rollInfo.numDice;
+	var modifier = rollInfo.modifier;
+	var memo = rollInfo.memo;
+
 	var user = gapi.hangout.getLocalParticipant();
 	var displayName = user.person.displayName;
 
-	var modifier = $(dom.mod).val() ? parseInt($(dom.mod).val()) : 0;
-
-	if (isNaN(modifier))
-	{
-		modifier = 0;
-	}
-
-	var memo = $(dom.memo).val();
+	var memoStr = memo 
+		? ('<a ' 
+			+ getRollAttrs(rollInfo) 
+			+ ' class="RollMemo" href="#" title="Save">' + memo + '</a>') 
+		: '';
 
 	console.log("For "+numDice+" dice of size "+die+"...");
 
@@ -58,11 +64,58 @@ function rollDice(die, numDice) {
 	}
 
 	var result = '<b>' + displayName + '</b><br />' 
-		+ (memo ? ('<i>' + memo + '</i> ') : '') 
-		+ numDice + 'd' + die
-		+ rollStr + ': <b>' + roll + '</b>';
+		+ memoStr + ' ' + numDice + 'd' + die
+		+ rollStr + ': <b>' + roll + '</b></span>';
 
 	induceUpdate({'roll': result});
+}
+
+function getRollAttrs(rollInfo)
+{
+	var die = rollInfo.dieSize;
+	var numDice = rollInfo.numDice;
+	var modifier = rollInfo.modifier;
+	var memo = rollInfo.memo;
+
+	return 'data-numDice="' + numDice + '"'
+		+ ' data-size="' + die + '"'
+		+ ' data-modifier="' + modifier + '"'
+		+ ' data-memo="' + memo + '"';
+}
+
+function extractRollInfo($rollSpan)
+{
+	var numDice = parseInt($rollSpan.attr('data-numDice'));
+
+	// If nothing entered early exit
+	if (isNaN(numDice))
+	{
+		return undefined;
+	}
+
+	var dieSize = parseInt($rollSpan.attr('data-size'));
+
+	// Decline to roll zero dice
+	if (isNaN(dieSize) || numDice < 1)
+	{
+		return undefined;
+	}
+
+	var modifier = parseInt($rollSpan.attr('data-modifier'));
+
+	if (isNaN(modifier))
+	{
+		modifier = 0;
+	}
+
+	var memo = $rollSpan.attr('data-memo');
+
+	return {
+		numDice: numDice,
+		dieSize: dieSize,
+		modifier: modifier,
+		memo: memo
+	};
 }
 
 function induceUpdate(obj) {
@@ -80,7 +133,7 @@ function induceUpdate(obj) {
 }
 
 function updateStateUi(state) {
-	$("#rolls").prepend('<p>' + state['roll'] + '</p>');
+	$(dom.rolls).prepend('<p>' + state['roll'] + '</p>');
 }
 
 function attachUiHandlers() {
@@ -102,7 +155,55 @@ function attachUiHandlers() {
 			return;
 		}
 
-		rollDice(dieSize, numDice);
+		var modifier = $(dom.mod).val() ? parseInt($(dom.mod).val()) : 0;
+
+		if (isNaN(modifier))
+		{
+			modifier = 0;
+		}
+
+		var memo = $(dom.memo).val();
+
+		rollDice({
+			dieSize: dieSize, 
+			numDice: numDice, 
+			modifier: modifier, 
+			memo: memo
+		});
+	});
+
+	$(dom.savedRolls).on('click', dom.savedRoll, {}, function() {
+		var roll = extractRollInfo($(this));
+
+		if (typeof roll == 'undefined')
+		{
+			return;
+		}
+
+		rollDice(roll);
+	});
+
+	$(dom.rolls).on('click', dom.rollSave, {}, function() {
+		var roll= extractRollInfo($(this));
+
+		if (typeof roll== 'undefined')
+		{
+			return;
+		}
+
+		$(dom.savedRolls + ' .SavedRoll[data-memo="' + roll.memo + '"]').parent('p').remove();
+
+		var savedRoll = '<a class="SavedRoll" href="#" title="Roll" ' 
+			+ getRollAttrs(roll) + '>'
+			+ roll.memo 
+			+ '</a>: '
+			+ roll.numDice + 'd' + roll.dieSize 
+			+ (roll.modifier > 0 ? ('+' + roll.modifier) : '');
+
+		$(dom.savedRolls).prepend('<p>' 
+			+ savedRoll 
+			+ '<a class="SavedRollDelete" href="#" title="Delete" onClick="$(this).parent(\'p\').remove();">X</a>'
+			+ '</p>');
 	});
 }
 

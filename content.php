@@ -36,6 +36,11 @@
   .DieLabel {
     cursor: pointer;
   }
+
+  .SavedRollDelete {
+    float: right;
+    margin-right: 10px;
+  }
 </style>
 
 <h3>Your Dice: Roll Them</h3>
@@ -52,7 +57,8 @@
     <label>Modifier: <input id="mod" type="number" max="999" min="-999" size="3" /></label>
     <label>Memo: <input id="memo" type="text" /></label>
   </form>
-  <br />
+  <p>Saved:</p>
+  <div id="SavedRolls"></div>
   <p>Rolls:</p>
   <div id="rolls"></div>
 </section>
