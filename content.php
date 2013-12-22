@@ -14,6 +14,9 @@
 <script src="<?php echo $contentPath ?>/app.js"></script>
 
 <style>
+  html, body {
+    height: 100%;
+  }
   body {
     font-family: Arial, Helvetica, sans-serif;
   }
@@ -40,6 +43,11 @@
   .SavedRollDelete {
     float: right;
     margin-right: 10px;
+  }
+
+  #rolls {
+    height: 75%;
+    overflow-y: scroll;
   }
 </style>
 
