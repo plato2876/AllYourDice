@@ -45,9 +45,13 @@
     margin-right: 10px;
   }
 
-  #rolls {
-    height: 75%;
+  .Rolls {
+    position: absolute;
+    bottom: 0;
+    top: 205px;
+    width: 100%;
     overflow-y: scroll;
+    box-sizing: border-box;
   }
 </style>
 
@@ -65,6 +69,8 @@
     <label>Modifier: <input id="mod" type="number" max="999" min="-999" size="3" /></label>
     <label>Memo: <input id="memo" type="text" /></label>
   </form>
+</section>
+<section class="Rolls">
   <p>Saved:</p>
   <div id="SavedRolls"></div>
   <p>Rolls:</p>
