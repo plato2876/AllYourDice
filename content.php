@@ -48,7 +48,7 @@
   .Rolls {
     position: absolute;
     bottom: 0;
-    top: 205px;
+    top: 300px;
     width: 100%;
     overflow-y: scroll;
     box-sizing: border-box;
